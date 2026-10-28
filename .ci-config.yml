@@ -1,0 +1,87 @@
+# .ci-config.yml — full reference. Copy into the project root and trim to what you need.
+#
+# The ONLY required key in this whole file is `project.name`. Every other section is optional;
+# where a key is shown below with a value, that value IS the built-in default — so copying a
+# section as-is and just deleting the comment changes nothing.
+#
+# Three kinds of settings live in three different places, and this file is only one of them:
+#   - repo policy      -> THIS file (.ci-config.yml), committed, same for every developer
+#   - per-developer     -> ~/.config/bvr-ci/config.yml, NOT committed, one machine's own settings
+#   - a secret's VALUE  -> never a file at all — only the NAME of an env var goes here or there;
+#                          you `export` the real value in your shell (or pull it from Passbolt)
+# `bvr-ci config` prints the fully resolved config and tells you which of the three each value
+# came from. See the README's "Configuration" section for the full per-key reference table.
+
+project:
+  name: circuless-platform-beta              # REQUIRED. Everything else in this file is optional.
+  language: auto          # auto | python | node | java. Explicit, not "auto": auto sniffs the
+                             # root and checks package.json BEFORE pyproject.toml, so a root
+                             # package.json added for the Cloud UI would silently move the
+                             # release version to a file that does not hold it.
+
+# ---------------------------------------------------------------------------------------------
+# image: only needed if this project has a Dockerfile (or you use `snapshot`/`clean-snapshots`).
+# Omit the whole section for library mode — you still get version bump + git tag + GitHub release,
+# just no image build/push.
+# ---------------------------------------------------------------------------------------------
+# N/A
+
+# ---------------------------------------------------------------------------------------------
+git:                       # optional — all keys have defaults
+  remote: origin           # remote to push commits/tags to
+  repo: bavenir/circuless-platform-beta      # optional owner/name; if set, preflight verifies the real remote matches
+                            # (guards against releasing from the wrong clone or a fork)
+
+# ---------------------------------------------------------------------------------------------
+# tests: local quality/security gates, run during release preflight — opt-OUT (default on).
+# A failing gate blocks the release. Run them standalone anytime with `bvr-ci run-tests`.
+# ---------------------------------------------------------------------------------------------
+tests:
+  runner: auto              # auto | native | docker
+                             #   auto   = use the installed binary if present, else run it in Docker
+                             #   native = require the binary (fails if missing, even with Docker present)
+                             #   docker = always use the container image, ignore any local install
+  secret_scan: true         # gitleaks — scan git history for committed secrets
+  trivy_scan: true          # trivy fs — vulnerabilities + misconfigurations (incl. Dockerfile) + secrets
+  trivy_scanners: vuln,misconfig,secret   # comma-separated subset trivy should run
+  trivy_severity: HIGH,CRITICAL           # comma-separated severities that fail the gate
+
+# ---------------------------------------------------------------------------------------------
+# signing: sign each pushed image's digest with Cosign. Opt-IN (default off) — read the
+# README's "Image signing" section (key generation, Passbolt storage, SECURITY.md) before
+# turning this on. The PRIVATE key never appears in this file — see the note below.
+# ---------------------------------------------------------------------------------------------
+#N/A
+
+# ---------------------------------------------------------------------------------------------
+# llm: OPTIONAL assist for commit-message drafts and release notes. Deterministic checks
+# (commit format, branch naming) never depend on this — the LLM only assists, never blocks.
+# ---------------------------------------------------------------------------------------------
+llm:
+  enabled: true             # off by default — a team/security decision, always repo-only
+  provider: claude_code             # http | claude_code — also settable per-developer, see below
+  # # base_url: https://api.mistral.ai/v1   # only used when provider: http; e.g. your LiteLLM gateway.
+  #                                         # repo-only (which endpoint calls are allowed is policy)
+  model: sonnet   # provider: http default. For provider: claude_code, the default
+                                  # is "" (Claude Code's own default model) — set an alias here or
+                                  # per-developer instead, e.g. "sonnet" / "opus" / "haiku"
+  # api_key_env: MISTRAL_API_KEY   # NAME of the env var holding the API key — only used when
+                                   # provider: http. claude_code needs no key (uses whatever
+                                   # Claude Code auth is already set up on the machine).
+                                   # Never put the actual key value here — it would be committed.
+
+# ---------------------------------------------------------------------------------------------
+# Per-developer overrides (NOT this file): ~/.config/bvr-ci/config.yml
+# ($XDG_CONFIG_HOME/bvr-ci/config.yml if set) — not committed, one machine's own settings.
+# Only these exact keys are read from it; everything else in it is ignored with a warning.
+#
+#   llm:
+#     provider: claude_code      # overrides llm.provider above, this machine only
+#     model: sonnet               # overrides llm.model above, this machine only
+#     api_key_env: MY_KEY_VAR     # overrides llm.api_key_env above, this machine only
+#   signing:
+#     key_path: /Users/me/.cosign/bavenir-release.key   # the ONLY way to set this
+#
+# Precedence (highest wins): env var ($BVR_LLM_PROVIDER, $BVR_LLM_MODEL, $BVR_SIGNING_KEY_PATH)
+# > this per-developer file > this repo's .ci-config.yml > built-in default.
+# Run `bvr-ci config` to see exactly where each resolved value came from.
