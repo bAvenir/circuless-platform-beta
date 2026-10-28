@@ -14,7 +14,7 @@
 
 project:
   name: circuless-platform-beta              # REQUIRED. Everything else in this file is optional.
-  language: auto          # auto | python | node | java. Explicit, not "auto": auto sniffs the
+  language: node          # auto | python | node | java. Explicit, not "auto": auto sniffs the
                              # root and checks package.json BEFORE pyproject.toml, so a root
                              # package.json added for the Cloud UI would silently move the
                              # release version to a file that does not hold it.
