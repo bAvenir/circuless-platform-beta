@@ -1,7 +1,9 @@
 # CIRCULess core platform — Security measures
 
-**Version:** 1.0 · 24 Sep 2026 · **Audience:** technical staff of CIRCULess partners, service owners, the T2.7 auditors
-**Status:** describes the beta (TRL 5) as designed and decided. The measures are built during the October milestones and verified in the security validation in early November, before the T2.7 audit (§14).
+**Version:** 1.1 · 28 Oct 2026 · **Audience:** technical staff of CIRCULess partners, service owners, the T2.7 auditors
+**Status:** describes the beta (TRL 5) **as built**, with everything not yet in place marked. Version 1.0 described the design before the October milestones; this revision reports what those milestones delivered and what they did not.
+
+**Reading it.** An unqualified statement describes something in place today. Anything outstanding is marked **(planned — date)** where it appears, and all of them are listed in §14. Nothing is described as done because it was decided.
 
 **Sources:** `D2.1_requirements.md` (the beta requirement set), `security_requirements.md` (the TRL 5 security requirements, `SR-` numbers), `security_requirements_review.md` (conflicts, decisions and the validation plan). Terms are defined in `12_glossary.md`.
 
@@ -18,7 +20,7 @@ The CIRCULess core platform — the CIRCULess Cloud and the CIRCULess Nodes — 
 5. **No anonymous access.** Every endpoint, the catalogue included, requires a valid token. The only exceptions are the identity provider's protocol endpoints, which the protocol requires to be open.
 6. **Sensitive data stays home.** BVR infrastructure stores only non-sensitive partner data, and BVR-operated nodes refuse data classified as sensitive. Sensitive data stays on the partner's own node.
 
-The platform is built from open-source components: Keycloak, Apache APISIX, NetBird / WireGuard, PostgreSQL, SQLite, FastAPI, Restic, Uptime Kuma, Grafana, Loki and Prometheus, all hosted in the EU on Hetzner.
+The platform is built from open-source components: Keycloak, Traefik, NetBird / WireGuard, PostgreSQL, SQLite, FastAPI, Restic, Uptime Kuma, Grafana, Loki and Prometheus, all hosted in the EU on Hetzner.
 
 ---
 
@@ -32,7 +34,7 @@ flowchart TB
   end
 
   subgraph Cloud["CIRCULess Cloud — BVR, Hetzner EU"]
-    GW["APISIX edge<br/>TLS · rate limits · routing only"]
+    GW["Traefik edge<br/>TLS · routing only"]
     KC["Keycloak<br/>identity provider"]
     API["Cloud API<br/>catalogue · agreements · registries"]
     PG[("PostgreSQL")]
@@ -66,7 +68,7 @@ flowchart TB
 | Edge → node | Forwarded requests | WireGuard overlay; the node validates every token itself |
 | Node → Cloud | Metadata publication, agreement sync | WireGuard; the node's own signed client assertion; a node identity that cannot access data |
 | Node → service | Invocations | Private container network or host firewall; the service accepts traffic only from its node |
-| Operator → infrastructure | SSH, admin consoles | Overlay only, SSH keys only, MFA for platform operators |
+| Operator → infrastructure | SSH, admin consoles | SSH keys only, passwords refused. **Overlay-only access and MFA are planned — 4 Nov** (§14) |
 
 ---
 
@@ -83,10 +85,10 @@ flowchart TB
 | Login flow | Authorization Code with PKCE only; implicit and password grants disabled on every client | SR-1.1.4 |
 | Password policy | At least 12 characters, complexity required, no forced rotation; hashed with Argon2 (Keycloak default) | SR-1.1.1 |
 | Brute-force protection | Temporary lockout after 5 failed attempts. Not permanent, so no one can lock another user out for good | SR-1.1.3 |
-| Login rate limiting | At the APISIX edge, on the Keycloak login routes | SR-1.1.7 |
+| Login rate limiting | **Not at the edge, and not possible in this topology.** Keycloak terminates its own TLS behind a pass-through router, so the edge never sees HTTP and cannot count requests. The brute-force lockout above is the control that covers repeated failed logins; volumetric abuse of the token endpoint is not covered. Recorded as a deviation, with the remedy written out | SR-1.1.7 |
 | Sessions | 30 minutes idle, 12 hours maximum | SR-1.1.5 |
 | Password reset | Email token only | SR-1.1.6 |
-| MFA | **Mandatory for platform operators** (BVR staff). Recommended for everyone else, and switched on for an organisation's users on request — a Keycloak setting, no code | SR-1.1.2, NFR1 |
+| MFA | **Decided mandatory for platform operators** (BVR staff), and **not yet enforced — planned 4 Nov**. Recommended for everyone else, and switched on for an organisation's users on request — a Keycloak setting, no code | SR-1.1.2, NFR1 |
 
 **Machines — nodes and service clients.** They authenticate with a **signed client assertion** (`private_key_jwt`, RFC 7523). The private key is generated on the machine and never leaves it; Keycloak holds only the public key, carried in an X.509 certificate. In the beta these certificates are self-signed. That is safe here: they identify clients and are never presented by an endpoint as a server certificate. CA-issued certificates follow in the final version. There are no client secrets anywhere, and the realm configuration in git contains no secrets.
 
@@ -110,7 +112,7 @@ flowchart TB
 
 ## 5. Authorization
 
-**Where the decision is made.** On the node that holds the asset, for every request, without calling the Cloud. One pure function, `decide(subject, action, resource, agreements, now)`, makes the decision, and it is the only place that grants access. The APISIX edge may reject obviously invalid requests early, but it never allows anything on its own.
+**Where the decision is made.** On the node that holds the asset, for every request, without calling the Cloud. One pure function, `decide(subject, action, resource, agreements, now)`, makes the decision, and it is the only place that grants access. **The edge does not participate at all.** An early-reject call from the edge to the node was in the design and was dropped for the beta: it gave the edge an authorization oracle in exchange for latency on refused requests, and the node decides again in process regardless.
 
 **Order of checks on every request:**
 
@@ -177,7 +179,7 @@ Services are not part of the core platform, but the node protects them and prote
 
 | Control | Setting | Req. |
 |---|---|---|
-| TLS version | 1.2 minimum, 1.3 preferred, at the APISIX edge | SR-2.2.1 |
+| TLS version | 1.2 minimum, 1.3 preferred. Terminated at the Traefik edge for the Cloud API and the console; Keycloak terminates its own, behind a pass-through router | SR-2.2.1 |
 | Cipher suites | Mozilla "intermediate" profile; DES, RC4, MD5, TLS 1.0 and 1.1 disabled | SR-2.2.2 |
 | HSTS | max-age ≥ 6 months on every public hostname | SR-2.2.3 |
 | Certificates | Let's Encrypt via DNS-01; no self-signed certificates on any reachable endpoint | SR-2.2.4 |
@@ -223,9 +225,9 @@ Overlay-only endpoints, such as partner nodes' overlay names, cannot obtain publ
 **GDPR.**
 
 - EU residency: all BVR hosting is in Hetzner's EU locations (SR-2.4.3).
-- Data subject rights (SR-2.4.1): access and rectification through the Keycloak account console; erasure through two-stage deletion; portability by an export on request.
+- Data subject rights (SR-2.4.1), which concern **accounts**: nothing outside Keycloak holds a name or an email, and the audit and access logs carry a pseudonymous subject only. Rectification is self-service in the Keycloak account console. Access and portability are an operator procedure, because a user cannot see their own authorisation attributes — those are admin-only by design. Erasure deletes the account and everything attached to it; the pseudonymous identifier remains in the append-only agreement record, which is both no longer attributable to a person and retained on the grounds Article 17(3) allows. The written procedure is awaiting sign-off. *(Two-stage deletion is a different thing — it withdraws a published **resource**, not an account.)*
 - Two-stage deletion: accounts and assets are withdrawn immediately and purged after the retention period. Audit records keep only the pseudonymous identifier; once the account is purged, it can no longer be linked to a person.
-- A privacy notice and a DPIA screening are part of the validation (SR-2.4.2). Only strictly necessary session cookies are used, so no consent banner is needed.
+- A privacy notice and a DPIA screening are **planned, for the validation** (SR-2.4.2); neither is published yet. The console sets **no cookies at all** — the browser session is held in `sessionStorage` — so there is nothing for a consent banner to consent to.
 
 ---
 
@@ -236,10 +238,10 @@ Overlay-only endpoints, such as partner nodes' overlay names, cannot obtain publ
 | Where | Inbound |
 |---|---|
 | Cloud | 443/TCP. The NetBird control plane is BVR's existing instance, not on the CIRCULess hosts |
-| Cloud hosts, SSH | 22/TCP over the overlay only — not reachable from the internet |
+| Cloud hosts, SSH | 22/TCP, keys only. **Overlay-only is planned — 4 Nov**; reachable from the internet today |
 | **Partner nodes** | **None.** Every connection is outbound |
 
-**Administration** (SR-4.1.2, SR-4.1.3). SSH accepts keys only, over the overlay. The Keycloak admin console, the APISIX admin API, Grafana and the container hosts are reachable over the overlay only. Organisation admins' work — approving requests, managing assets — is an application function, done in the public Cloud UI under the same authentication and audit as everything else.
+**Administration** (SR-4.1.2, SR-4.1.3). SSH accepts keys only and refuses passwords. **Restricting SSH and the Keycloak admin console to the overlay is planned — 4 Nov**; today both are reachable from the internet, the console behind a login form with brute-force protection. Traefik has no admin API to expose — that was one reason for choosing it — and its dashboard returns 404. Organisation admins' work — approving requests, managing assets — is an application function, done in the public Cloud UI under the same authentication and audit as everything else.
 
 **Hosts.**
 
@@ -249,7 +251,7 @@ Overlay-only endpoints, such as partner nodes' overlay names, cannot obtain publ
 - The Docker socket is never mounted into a container, and the `docker` group is limited to operators, because access to the container runtime is equivalent to root.
 - PostgreSQL connections are logged with `pgaudit` (SR-7.1.2).
 
-**DDoS.** Hetzner's included DDoS filtering (SR-4.1.5), plus rate limits at the APISIX edge on the Cloud API and gateway routes (SR-3.2.6). The edge also applies a CORS origin allowlist, with no wildcard (SR-3.2.4).
+**DDoS.** Hetzner's included DDoS filtering (SR-4.1.5), plus a rate limit at the Traefik edge on the Cloud API — 60 requests a minute per address, burst 120. **The node gateway routes carry none yet** (SR-3.2.6). The edge also applies a CORS origin allowlist, with no wildcard (SR-3.2.4).
 
 ---
 
@@ -266,7 +268,7 @@ Overlay-only endpoints, such as partner nodes' overlay names, cannot obtain publ
 
 **Monitoring.** Uptime Kuma measures the availability of Keycloak, the Cloud API and the gateway. The target is 98% a month during pilots; the TRL 5 acceptance threshold is 95% (NFR6). Request latency is monitored in Prometheus and Grafana (SR-3.3.1). Alerts fire when a node or the Cloud goes down, on spikes in authentication failures, and on low disk or memory (SR-4.4.2).
 
-**Incident response** (SR-4.4.5). A one-page procedure: who to contact, how to take a component offline, how to notify partners. It includes the **node kill switch**: disabling the node's Keycloak client and removing its NetBird peer cuts a node off the platform within minutes.
+**Incident response** (SR-4.4.5). A written procedure covering containment, what to preserve before restarting anything, the order to rotate credentials in, and when partners must be told. **The contact list in it is not yet filled in**, and an incident procedure without reachable names is not one — that is outstanding. It includes the **node kill switch**: disabling the node's Keycloak client and removing its NetBird peer cuts a node off the platform within minutes.
 
 **Backups and recovery.** Nightly encrypted backups of the Keycloak and Cloud API databases, and a weekly configuration backup (SR-2.3.1, SR-2.3.2). Recovery point 24 hours, recovery time 4 hours, **verified by a restore test** (NFR6).
 
@@ -281,9 +283,9 @@ Overlay-only endpoints, such as partner nodes' overlay names, cannot obtain publ
 | Dependency scanning; critical CVEs fail the build | Trivy or Grype on `uv.lock` | SR-4.2.1 |
 | Container image scanning | Trivy | SR-4.2.2, SR-5.1.2 |
 | Secret scanning, in CI and as a pre-commit hook | Gitleaks | SR-4.3.1, SR-4.3.2 |
-| Static analysis | Bandit and Semgrep | SR-4.3.3 |
-| Protected `main`, one required review, no direct pushes | Git branch protection | SR-4.3.5 |
-| Signed commits | SSH signing | SR-6.1.4 |
+| Static analysis | Bandit and Semgrep. On the node they cover its source and tests; on the Cloud they currently cover the deployment scripts only | SR-4.3.3 |
+| Protected `main`, one required review, no direct pushes | Git branch protection. **Planned — 4 Nov**; there is one developer, and self-approval through a second account would not be review | SR-4.3.5 |
+| Signed commits | SSH signing. **Planned — 4 Nov**; no signing key is configured and the history is unsigned | SR-6.1.4 |
 | Pinned versions | `uv.lock`; pinned Compose files; images by digest; pinned install line (`uvx circuless-node==<version>`) | SR-4.3.6, SR-6.1.1 |
 | SBOM per release | Syft | SR-6.1.3 |
 | Signed release images, verified before every deployment | cosign | SR-6.1.4 |
@@ -311,6 +313,22 @@ A partner that stores sensitive data on its own node decides how to protect it a
 
 ## 14. Limitations of the beta, and how the measures are verified
 
+**Not yet in place.** Everything marked *(planned)* above, in one list. Each is recorded
+with its reasoning in the platform's deferral register, and each is due before the
+security validation.
+
+| | Due | Why it is not done |
+|---|---|---|
+| MFA for platform operators | 4 Nov 2026 | Nobody held the role while the realm had no users; it starts mattering with the first operator |
+| SSH restricted to the overlay | 4 Nov 2026 | Waits on the isolated overlay. SSH already refuses passwords, which is the control that matters most |
+| Keycloak admin console behind the overlay | 4 Nov 2026 | Same. A console on the public internet is the first thing an auditor looks for, and it is the one to close first |
+| Protected `main`, required review | 4 Nov 2026 | One developer; review through a second account would be theatre rather than review |
+| Signed commits and tags | 4 Nov 2026 | No signing key configured, and the whole history is unsigned, so enforcement starts from a baseline either way |
+| Rate limiting on the login routes | **no date** | Not a matter of effort. Keycloak terminates its own TLS behind a pass-through router, so no HTTP middleware can apply. Recorded as a deviation, with three remedies written out and the preferred one drafted |
+| Rate limiting on the node gateway routes | **no date** | The Cloud API is limited; the routes to nodes are not |
+| Incident contact list | before the validation | The procedure is written; the names and numbers in it are not |
+| Privacy notice and DPIA screening | before the validation | SR-2.4.2, recommended at TRL 5 for a closed consortium with no personal data beyond accounts |
+
 **Declared limitations at TRL 5:**
 
 | Limitation | Final-version path |
@@ -326,8 +344,10 @@ A partner that stores sensitive data on its own node decides how to protect it a
 
 **Verification.** Each security requirement has a verification method — configuration inspection, automated test, CI evidence, external scan (testssl.sh, nmap) or document review — and a phase:
 
-- **Built in during October** (about 4 days across the milestones): the CI pipeline and `/v1` in the first milestone; Keycloak hardening; API hardening; edge configuration; host hardening.
+- **Built in during October** (about 4 days across the milestones): the CI pipeline and `/v1` in the first milestone; Keycloak hardening; API hardening; edge configuration; host hardening. Delivered, except the items in the table above.
 - **Tested in the two-organisation end-to-end test** (M5, 34 cases, 14 security-critical): cross-organisation denial, agreement revocation, token audience and node-token rejection among them.
 - **Security validation in early November** (about 2.5 days): scans, an unauthenticated sweep of every route, path-traversal tests, a triggered alert, a restore test, and the policy documents. The result is one evidence pack per requirement, sent to the T2.7 auditors.
 
-**Exit criterion:** every mandatory requirement is verified, or covered by an exception accepted in writing; every recommended one is reported with its status. The full mapping is in `security_requirements_review.md` §4.
+**Exit criterion:** every mandatory requirement is verified, or covered by an exception accepted in writing; every recommended one is reported with its status. The full mapping is in `security_requirements_review.md` §4, and the requirement-by-requirement verdict with its evidence is in `compliance-assessment.md`.
+
+**One decision on the edge, for completeness.** The design specified Apache APISIX in standalone mode. The beta runs on the host's existing **Traefik** instead, hardened in place rather than introducing a second proxy before acceptance (D32, D33). What the edge must do is unchanged — terminate TLS, route, never decide — and Traefik does all of it. The one consequence is the login rate limiting above: Keycloak sits behind a pass-through router, so no HTTP middleware reaches it.
