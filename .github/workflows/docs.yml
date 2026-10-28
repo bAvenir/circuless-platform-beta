@@ -1,0 +1,69 @@
+name: Docs
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install
+        run: pip install -r requirements-docs.txt
+
+      # The guides come from the code repositories at a pinned ref, so the site is
+      # reproducible and nothing here is a copy somebody can quietly edit.
+      - name: Fetch the guides
+        env:
+          CIRCULESS_CLOUD_REF: ${{ vars.CIRCULESS_CLOUD_REF || 'main' }}
+          CIRCULESS_NODE_REF: ${{ vars.CIRCULESS_NODE_REF || 'main' }}
+        run: ./scripts/fetch-guides.sh
+
+      # `strict: true` in mkdocs.yml turns a broken internal link or a page missing
+      # from the nav into a failure. A documentation site's commonest defect is a link
+      # to a page that moved, and it is invisible until a reader hits it.
+      - name: Build
+        run: mkdocs build
+
+      - name: Keep the site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site/
+          retention-days: 30
+
+  # Publishing is a separate job so that a broken build never replaces a working site,
+  # and so the artifact above exists either way.
+  publish:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+      - uses: actions/configure-pages@v5
+        # Creates the Pages site on first run, so nobody has to find the
+        # setting. Harmless once it exists.
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4

@@ -1,7 +1,18 @@
-*.log
-.env
-.DS_Store
-dist/
-build/
-cosign.key
-*.cosign.key
+site/
+.cache/
+
+# Fetched by scripts/fetch-guides.sh from the code repositories, at a pinned ref.
+# Deliberately not committed: these are copies of files that are tested where they
+# live, and a committed copy is one somebody will edit.
+docs/guides/deploying.md
+docs/guides/deployment-reference.md
+docs/guides/when-it-goes-wrong.md
+docs/guides/backups.md
+docs/guides/identities.md
+docs/guides/consuming-data.md
+docs/guides/running-a-node.md
+docs/guides/browser-applications.md
+docs/integrating-a-service/the-guide.md
+docs/integrating-a-service/acting-for-a-user.md
+docs/integrating-a-service/reference-service.md
+docs/integrating-a-service/api-surface.md

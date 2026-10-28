@@ -1,0 +1,23 @@
+/* The brand, on top of Material.
+ *
+ * `tokens.css` is the vendored design pack, byte-identical to the one the console uses
+ * and checksummed there. Nothing below redefines a colour; it maps the tokens onto the
+ * variables Material reads, so the two surfaces cannot drift apart. */
+
+:root {
+  --md-primary-fg-color: var(--cl-forest, #1d3b2a);
+  --md-accent-fg-color: var(--cl-accent, #4a7c59);
+  --md-default-fg-color: var(--cl-ink, #1a1a1a);
+}
+
+.md-footer-emblem {
+  display: block;
+  margin-top: 0.75rem;
+}
+
+/* Fetched pages carry a provenance comment; make the first-line note visible as a
+ * quiet banner rather than an HTML comment nobody reads. */
+.fetched-note {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}

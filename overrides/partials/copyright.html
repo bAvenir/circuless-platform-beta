@@ -1,0 +1,10 @@
+{# The EU emblem belongs in the footer of a project output, not as decoration — the
+   console already does this. Overridden rather than set in `copyright` because that
+   value is raw HTML with no `base_url`, and an absolute `/assets/...` 404s the moment
+   the site is served under a path, which GitHub Pages does. #}
+<div class="md-copyright">
+  <div class="md-copyright__highlight">CIRCULess — the core platform documentation</div>
+  <img class="md-footer-emblem"
+       src="{{ base_url }}/assets/funded-by-the-eu.png"
+       alt="Funded by the European Union" width="160">
+</div>

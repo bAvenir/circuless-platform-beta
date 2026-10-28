@@ -1,0 +1,110 @@
+# The CIRCULess documentation site.
+#
+# **What is published is exactly what is under `docs/`.** Everything else in this
+# repository — the arc42 chapters, the decision log, the compliance assessment, the
+# requirements — stays at the root and is never copied in. "Is this public?" is then
+# answered by where a file lives, not by whether somebody remembered to leave it out of
+# the nav below. MkDocs will happily serve a page that is absent from `nav` with only a
+# warning, so the separation has to be physical.
+#
+# Several pages under `docs/guides/` and `docs/integrating-a-service/` are **fetched**
+# by `scripts/fetch-guides.sh` and gitignored. They are tested where they live; a copy
+# edited here would lose that and nobody would notice.
+
+site_name: CIRCULess
+site_description: The CIRCULess core platform — what it is, how to run it, and how to integrate with it.
+site_url: !ENV [CIRCULESS_SITE_URL, 'https://bavenir.github.io/circuless-platform-beta/']
+repo_url: https://github.com/bAvenir/circuless-platform-beta
+edit_uri: ""
+
+theme:
+  name: material
+  custom_dir: overrides
+  logo: assets/circuless-logo.svg
+  favicon: assets/circuless-logo.svg
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - content.code.copy
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: { icon: material/weather-night, name: Dark mode }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: { icon: material/weather-sunny, name: Light mode }
+
+extra_css:
+  - assets/tokens.css
+  - assets/circuless.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      # Matches GitHub's slugger, so a heading link that works in the repository
+      # works here. Without it every `#part-4--a-node` in the fetched guides is a
+      # dead anchor, and `strict` quite rightly refuses to publish them.
+      slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower}}
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight: { anchor_linenums: true }
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+
+plugins:
+  - search
+
+# Fail the build on a broken internal link or a page missing from the nav, rather than
+# shipping it. A documentation site's commonest defect is a link to a page that moved.
+strict: true
+validation:
+  links:
+    absolute_links: ignore
+    unrecognized_links: warn
+  nav:
+    omitted_files: warn
+    not_found: warn
+
+nav:
+  - Home: index.md
+  - Understanding CIRCULess:
+      - understanding/index.md
+      - What CIRCULess is: understanding/what-circuless-is.md
+      - The pieces: understanding/the-pieces.md
+      - How data gets shared: understanding/how-data-gets-shared.md
+      - Who runs what: understanding/who-runs-what.md
+      - What it does not do: understanding/what-it-does-not-do.md
+      - How your data is protected: understanding/security-measures.md
+      - Glossary: understanding/glossary.md
+  - Guides:
+      - guides/index.md
+      - Deploy a cloud: guides/deploying.md
+      - Deployment reference: guides/deployment-reference.md
+      - Identities — people, organisations, services: guides/identities.md
+      - Run a node: guides/running-a-node.md
+      - Publish and consume data: guides/consuming-data.md
+      - Browser applications: guides/browser-applications.md
+      - Backups and restore: guides/backups.md
+      - When it goes wrong: guides/when-it-goes-wrong.md
+  - Integrating a service:
+      - integrating-a-service/index.md
+      - The integration guide: integrating-a-service/the-guide.md
+      - Integration requirements: integrating-a-service/integration-requirements.md
+      - Acting for a user: integrating-a-service/acting-for-a-user.md
+      - The reference service: integrating-a-service/reference-service.md
+      - API surface: integrating-a-service/api-surface.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/bAvenir/circuless-platform-beta

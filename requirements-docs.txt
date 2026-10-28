@@ -1,0 +1,4 @@
+# Pinned, like everything else that builds an artefact (SR-4.3.6, SR-6.1.1).
+mkdocs==1.6.1
+mkdocs-material==9.5.49
+pymdown-extensions==10.14
