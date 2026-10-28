@@ -53,7 +53,21 @@ fetch() {  # fetch <directory> <repository> <ref>
     return
   fi
   echo "▶ $2 @ $3  → $1"
-  git clone --quiet --depth 1 --branch "$3" "$ORG/$2.git" "$work/$1"
+  if ! git clone --quiet --depth 1 --branch "$3" "$ORG/$2.git" "$work/$1" 2>"$work/clone.err"; then
+    sed 's/^/    /' "$work/clone.err" >&2
+    # git's own message for "private repository, no credential" is
+    # `could not read Username for 'https://github.com'`, which reads like a prompt
+    # problem rather than a permissions one. Say what it actually means.
+    if grep -q "could not read Username\|Authentication failed\|not found" "$work/clone.err"; then
+      {
+        echo "::error::cannot read $2 — it is private, or the ref '$3' does not exist."
+        echo "  In CI: set the DOCS_FETCH_TOKEN secret (a fine-grained PAT with"
+        echo "  Contents: Read on that repository). Locally: check out $2 as a sibling"
+        echo "  directory named '$1', which this script prefers anyway."
+      } >&2
+    fi
+    exit 1
+  fi
   git -C "$work/$1" log -1 --format='  %h %s'
 }
 

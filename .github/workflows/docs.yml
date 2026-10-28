@@ -9,6 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Lifted to the job because the `secrets` context is **not available in a step's
+    # `if:`** — only `env` is. Written as a step condition it fails to parse with
+    # "Unrecognized named-value: 'secrets'".
+    env:
+      DOCS_FETCH_TOKEN: ${{ secrets.DOCS_FETCH_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -21,6 +26,22 @@ jobs:
 
       # The guides come from the code repositories at a pinned ref, so the site is
       # reproducible and nothing here is a copy somebody can quietly edit.
+      # `circuless-cloud-beta` is private, and the default GITHUB_TOKEN is scoped to
+      # the repository the workflow runs in — so an anonymous clone fails with
+      # "could not read Username for 'https://github.com'", which does not read like a
+      # permissions problem at all.
+      #
+      # DOCS_FETCH_TOKEN is a fine-grained PAT with **Contents: Read** on
+      # `circuless-cloud-beta` and nothing else. If the secret is absent the clone is
+      # anonymous, which is correct for the public repositories and fails clearly for
+      # the private one.
+      - name: Credential for the private repository
+        if: env.DOCS_FETCH_TOKEN != ''
+        run: |
+          git config --global \
+            url."https://x-access-token:${DOCS_FETCH_TOKEN}@github.com/".insteadOf \
+            "https://github.com/"
+
       - name: Fetch the guides
         env:
           CIRCULESS_CLOUD_REF: ${{ vars.CIRCULESS_CLOUD_REF || 'main' }}
