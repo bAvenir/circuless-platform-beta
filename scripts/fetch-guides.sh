@@ -112,9 +112,11 @@ place circuless-node/examples/reference-service/README.md integrating-a-service/
 # repositories to suit this site would make them wrong for anyone reading on GitHub.
 python3 "$here/scripts/relink.py" "$here/docs"
 
-# The API surface, generated from the schema the Cloud API commits.
+# The API surface, generated from the documents both repositories commit. Neither API
+# serves its own schema, so these files are the only published description of either.
 python3 "$here/scripts/api_surface.py" \
-  "$work/circuless-cloud/api/openapi.json" \
+  "$work/$CLOUD_DIR/api/openapi.json" \
+  "$work/$NODE_DIR/openapi.json" \
   > "$here/docs/integrating-a-service/api-surface.md"
 
 echo "✓ guides in place"
