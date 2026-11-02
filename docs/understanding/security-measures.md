@@ -68,7 +68,7 @@ flowchart TB
 | Edge → node | Forwarded requests | WireGuard overlay; the node validates every token itself |
 | Node → Cloud | Metadata publication, agreement sync | WireGuard; the node's own signed client assertion; a node identity that cannot access data |
 | Node → service | Invocations | Private container network or host firewall; the service accepts traffic only from its node |
-| Operator → infrastructure | SSH, admin consoles | SSH keys only, passwords refused. **Overlay-only access and MFA are planned — 4 Nov** (§14) |
+| Operator → infrastructure | SSH, admin consoles | SSH keys only, passwords refused. **Overlay-only access and MFA are nice to have to harden the security** (§14) |
 
 ---
 
@@ -238,10 +238,10 @@ Overlay-only endpoints, such as partner nodes' overlay names, cannot obtain publ
 | Where | Inbound |
 |---|---|
 | Cloud | 443/TCP. The NetBird control plane is BVR's existing instance, not on the CIRCULess hosts |
-| Cloud hosts, SSH | 22/TCP, keys only. **Overlay-only is planned — 4 Nov**; reachable from the internet today |
+| Cloud hosts, SSH | 22/TCP, keys only. **Overlay-only is nice to have**; reachable from the internet today |
 | **Partner nodes** | **None.** Every connection is outbound |
 
-**Administration** (SR-4.1.2, SR-4.1.3). SSH accepts keys only and refuses passwords. **Restricting SSH and the Keycloak admin console to the overlay is planned — 4 Nov**; today both are reachable from the internet, the console behind a login form with brute-force protection. Traefik has no admin API to expose — that was one reason for choosing it — and its dashboard returns 404. Organisation admins' work — approving requests, managing assets — is an application function, done in the public Cloud UI under the same authentication and audit as everything else.
+**Administration** (SR-4.1.2, SR-4.1.3). SSH accepts keys only and refuses passwords. **Restricting SSH and the Keycloak admin console to the overlay is nice to have**; today both are reachable from the internet, the console behind a login form with brute-force protection. Traefik has no admin API to expose — that was one reason for choosing it — and its dashboard returns 404. Organisation admins' work — approving requests, managing assets — is an application function, done in the public Cloud UI under the same authentication and audit as everything else.
 
 **Hosts.**
 
