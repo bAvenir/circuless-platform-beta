@@ -8,7 +8,7 @@ Terms as used in the CIRCULess core platform documentation, user interfaces and 
 ## 1. The platform
 
 **CIRCULess core platform**
-The *CIRCULess Cloud* and the *CIRCULess Nodes* together. It lets organisations publish data and services, find one another's, agree access, and exchange them, with every access decided by the provider's own node and recorded. Built and operated by Bavenir (BVR) in WP2.
+The *CIRCULess Cloud* and the *CIRCULess Nodes* together. It lets organisations publish data and services, find one another's, agree access, and exchange them, with every access decided by the provider's own node and recorded. Built and operated by Bavenir (BVR) during CIRCULess project.
 
 **CIRCULess waste management platform**
 The *core platform* together with every *service* integrated into it. Called "CIRCULess DWMP" in D1.1.
@@ -47,7 +47,7 @@ The web interface for searching the catalogue, requesting access, approving requ
 The web interface for managing a node and the assets of its tenants.
 
 **Platform operator**
-A BVR staff member who administers the core platform. Platform operators must use *MFA*.
+A BVR staff member who administers the core platform during CIRCULess project. Platform operators should use *MFA*.
 
 ---
 
@@ -152,7 +152,7 @@ New assets start as *org*.
 The owner's statement of how sensitive a dataset is: *synthetic*, *non-sensitive* or *sensitive*. Set at registration.
 
 **Sensitive data**
-Confidential business data, or personal data inside an asset. It stays on the owner's own node; BVR-operated nodes refuse it.
+Confidential business data, or personal data inside an asset. It stays on the owner's own node.
 
 **Upload** (ingestion)
 Putting data into a dataset through the node's API — by a person, an organisation's pipeline or an adapter service.
@@ -236,7 +236,7 @@ A machine-readable description of an API. Required for every service, and publis
 The platform's statement on encryption in transit: TLS with certificates from a public certificate authority on every publicly reachable endpoint, and WireGuard on the overlay network.
 
 **Shared responsibility**
-BVR is responsible for the platform software, the Cloud and BVR-operated nodes. An organisation running its own node is responsible for the host it runs on — operating system updates, disk protection, physical security and local firewall.
+BVR is responsible for the platform software, the Cloud and BVR-operated nodes during CIRCULess project. An organisation running its own node is responsible for the host it runs on — operating system updates, disk protection, physical security and local firewall.
 
 **Degraded mode**
 When the Cloud is unreachable, nodes keep deciding access from their cached agreements. New tokens cannot be issued while the identity provider is down, so after at most five minutes new requests stop until it recovers.
