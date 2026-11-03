@@ -1,9 +1,18 @@
 # CIRCULess core platform — Security measures
 
-**Version:** 1.1 · 28 Oct 2026 · **Audience:** technical staff of CIRCULess partners, service owners, the T2.7 auditors
+**Version:** 1.2 · 2 Nov 2026 · **Audience:** technical staff of CIRCULess partners, service owners, the T2.7 auditors
 **Status:** describes the beta (TRL 5) **as built**, with everything not yet in place marked. Version 1.0 described the design before the October milestones; this revision reports what those milestones delivered and what they did not.
 
-**Reading it.** An unqualified statement describes something in place today. Anything outstanding is marked **(planned — date)** where it appears, and all of them are listed in §14. Nothing is described as done because it was decided.
+**Reading it.** An unqualified statement describes something in place today. Anything outstanding is marked where it appears, and all of them are listed in §14. Nothing is described as done because it was decided.
+
+Two markers, and the difference matters:
+
+| Marker | Meaning |
+|---|---|
+| **(planned — date)** | Committed, with a date, and due before the security validation |
+| **(recommended for the beta)** | Not in place and not a condition of the beta. Intended, with the procedure written where one exists, and enforced from the first release after the beta |
+
+Five controls moved to the second marker on 2 November 2026: login rate limiting, SSH restricted to the overlay, the Keycloak admin console behind the overlay, protected `main` with a required review, and signed commits. They were previously planned for 4 November. Nothing that was in place has been removed — what changed is whether the beta waits for them.
 
 **Sources:** `D2.1_requirements.md` (the beta requirement set), `security_requirements.md` (the TRL 5 security requirements, `SR-` numbers), `security_requirements_review.md` (conflicts, decisions and the validation plan). Terms are defined in `12_glossary.md`.
 
@@ -68,7 +77,7 @@ flowchart TB
 | Edge → node | Forwarded requests | WireGuard overlay; the node validates every token itself |
 | Node → Cloud | Metadata publication, agreement sync | WireGuard; the node's own signed client assertion; a node identity that cannot access data |
 | Node → service | Invocations | Private container network or host firewall; the service accepts traffic only from its node |
-| Operator → infrastructure | SSH, admin consoles | SSH keys only, passwords refused. **Overlay-only access and MFA are nice to have to harden the security** (§14) |
+| Operator → infrastructure | SSH, admin consoles | SSH keys only, passwords refused. Overlay-only access **(recommended for the beta)**; MFA planned — 4 Nov (§14) |
 
 ---
 
@@ -85,7 +94,7 @@ flowchart TB
 | Login flow | Authorization Code with PKCE only; implicit and password grants disabled on every client | SR-1.1.4 |
 | Password policy | At least 12 characters, complexity required, no forced rotation; hashed with Argon2 (Keycloak default) | SR-1.1.1 |
 | Brute-force protection | Temporary lockout after 5 failed attempts. Not permanent, so no one can lock another user out for good | SR-1.1.3 |
-| Login rate limiting | **Not at the edge, and not possible in this topology.** Keycloak terminates its own TLS behind a pass-through router, so the edge never sees HTTP and cannot count requests. The brute-force lockout above is the control that covers repeated failed logins; volumetric abuse of the token endpoint is not covered. Recorded as a deviation, with the remedy written out | SR-1.1.7 |
+| Login rate limiting | **Not at the edge, and not possible in this topology.** Keycloak terminates its own TLS behind a pass-through router, so the edge never sees HTTP and cannot count requests. The brute-force lockout above is the control that covers repeated failed logins; volumetric abuse of the token endpoint is not covered. Was recorded as a deviation; the topology change that removes the obstacle is now written out as a procedure, and the control is **(recommended for the beta)** | SR-1.1.7 |
 | Sessions | 30 minutes idle, 12 hours maximum | SR-1.1.5 |
 | Password reset | Email token only | SR-1.1.6 |
 | MFA | **Decided mandatory for platform operators** (BVR staff), and **not yet enforced — planned 4 Nov**. Recommended for everyone else, and switched on for an organisation's users on request — a Keycloak setting, no code | SR-1.1.2, NFR1 |
@@ -238,10 +247,10 @@ Overlay-only endpoints, such as partner nodes' overlay names, cannot obtain publ
 | Where | Inbound |
 |---|---|
 | Cloud | 443/TCP. The NetBird control plane is BVR's existing instance, not on the CIRCULess hosts |
-| Cloud hosts, SSH | 22/TCP, keys only. **Overlay-only is nice to have**; reachable from the internet today |
+| Cloud hosts, SSH | 22/TCP, keys only. Overlay-only **(recommended for the beta)**; reachable from the internet today |
 | **Partner nodes** | **None.** Every connection is outbound |
 
-**Administration** (SR-4.1.2, SR-4.1.3). SSH accepts keys only and refuses passwords. **Restricting SSH and the Keycloak admin console to the overlay is nice to have**; today both are reachable from the internet, the console behind a login form with brute-force protection. Traefik has no admin API to expose — that was one reason for choosing it — and its dashboard returns 404. Organisation admins' work — approving requests, managing assets — is an application function, done in the public Cloud UI under the same authentication and audit as everything else.
+**Administration** (SR-4.1.2, SR-4.1.3). SSH accepts keys only and refuses passwords. Restricting SSH and the Keycloak admin console to the overlay is **(recommended for the beta)**; today both are reachable from the internet, the console behind a login form with brute-force protection. Traefik has no admin API to expose — that was one reason for choosing it — and its dashboard returns 404. Organisation admins' work — approving requests, managing assets — is an application function, done in the public Cloud UI under the same authentication and audit as everything else.
 
 **Hosts.**
 
@@ -284,8 +293,8 @@ Overlay-only endpoints, such as partner nodes' overlay names, cannot obtain publ
 | Container image scanning | Trivy | SR-4.2.2, SR-5.1.2 |
 | Secret scanning, in CI and as a pre-commit hook | Gitleaks | SR-4.3.1, SR-4.3.2 |
 | Static analysis | Bandit and Semgrep. On the node they cover its source and tests; on the Cloud they currently cover the deployment scripts only | SR-4.3.3 |
-| Protected `main`, one required review, no direct pushes | Git branch protection. **Planned — 4 Nov**; there is one developer, and self-approval through a second account would not be review | SR-4.3.5 |
-| Signed commits | SSH signing. **Planned — 4 Nov**; no signing key is configured and the history is unsigned | SR-6.1.4 |
+| Protected `main`, one required review, no direct pushes | Git branch protection. **(recommended for the beta)**; there is one developer, and self-approval through a second account would not be review. In place once a second developer joins | SR-4.3.5 |
+| Signed commits | SSH signing. **(recommended for the beta)**; no signing key is configured and the history is unsigned. Release *images* are signed with cosign and verified before deployment today — that is the row below | SR-6.1.4 |
 | Pinned versions | `uv.lock`; pinned Compose files; images by digest; pinned install line (`uvx circuless-node==<version>`) | SR-4.3.6, SR-6.1.1 |
 | SBOM per release | Syft | SR-6.1.3 |
 | Signed release images, verified before every deployment | cosign | SR-6.1.4 |
@@ -313,18 +322,22 @@ A partner that stores sensitive data on its own node decides how to protect it a
 
 ## 14. Limitations of the beta, and how the measures are verified
 
-**Not yet in place.** Everything marked *(planned)* above, in one list. Each is recorded
-with its reasoning in the platform's deferral register, and each is due before the
-security validation.
+**Not yet in place.** Everything marked *(planned — date)* or *(recommended for the
+beta)* above, in one list. Each is recorded with its reasoning in the platform's deferral
+register, which is printed by the build pipeline on every run so that nothing on this
+list can quietly disappear.
+
+The **Due** column separates the two: a date means the beta waits for it; *after the
+beta* means it does not.
 
 | | Due | Why it is not done |
 |---|---|---|
 | MFA for platform operators | 4 Nov 2026 | Nobody held the role while the realm had no users; it starts mattering with the first operator |
-| SSH restricted to the overlay | 4 Nov 2026 | Waits on the isolated overlay. SSH already refuses passwords, which is the control that matters most |
-| Keycloak admin console behind the overlay | 4 Nov 2026 | Same. A console on the public internet is the first thing an auditor looks for, and it is the one to close first |
-| Protected `main`, required review | 4 Nov 2026 | One developer; review through a second account would be theatre rather than review |
-| Signed commits and tags | 4 Nov 2026 | No signing key configured, and the whole history is unsigned, so enforcement starts from a baseline either way |
-| Rate limiting on the login routes | **no date** | Not a matter of effort. Keycloak terminates its own TLS behind a pass-through router, so no HTTP middleware can apply. Recorded as a deviation, with three remedies written out and the preferred one drafted |
+| SSH restricted to the overlay | after the beta | Waits on the isolated overlay. SSH already refuses passwords, which is the control that matters most. Becomes required again if BVR infrastructure is ever used for sensitive or personal data |
+| Keycloak admin console behind the overlay | after the beta | Same. A console on the public internet is the first thing an auditor looks for, and it is still the one to close first |
+| Protected `main`, required review | after the beta | One developer; review through a second account would be theatre rather than review. Required as soon as a second developer joins |
+| Signed commits and tags | after the beta | No signing key configured, and the whole history is unsigned, so enforcement starts from a baseline either way. Release images are signed today |
+| Rate limiting on the login routes | after the beta | Was not a matter of effort: Keycloak terminates its own TLS behind a pass-through router, so no HTTP middleware can apply. That obstacle has since been removed on paper and the preferred remedy is written out as a procedure |
 | Rate limiting on the node gateway routes | **no date** | The Cloud API is limited; the routes to nodes are not |
 | Incident contact list | before the validation | The procedure is written; the names and numbers in it are not |
 | Privacy notice and DPIA screening | before the validation | SR-2.4.2, recommended at TRL 5 for a closed consortium with no personal data beyond accounts |
