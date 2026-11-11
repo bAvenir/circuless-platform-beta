@@ -36,7 +36,6 @@ REFS = {
 #: Source basename → the page it became, as a path under `docs/`.
 MOVED = {
     "TUTORIAL.md": "guides/deploying.md",
-    "DEPLOYMENT.md": "guides/deployment-reference.md",
     "TROUBLESHOOTING.md": "guides/when-it-goes-wrong.md",
     "BACKUP-AND-RESTORE.md": "guides/backups.md",
     "identities-by-hand.md": "guides/identities.md",

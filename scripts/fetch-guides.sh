@@ -96,7 +96,6 @@ place() {
 }
 
 place circuless-cloud/deploy/TUTORIAL.md              guides/deploying.md
-place circuless-cloud/deploy/DEPLOYMENT.md            guides/deployment-reference.md
 place circuless-cloud/deploy/TROUBLESHOOTING.md       guides/when-it-goes-wrong.md
 place circuless-cloud/deploy/BACKUP-AND-RESTORE.md    guides/backups.md
 place circuless-cloud/docs/identities-by-hand.md      guides/identities.md

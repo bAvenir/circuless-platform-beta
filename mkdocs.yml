@@ -87,7 +87,6 @@ nav:
   - Guides:
       - guides/index.md
       - Deploy a cloud: guides/deploying.md
-      - Deployment reference: guides/deployment-reference.md
       - Identities — people, organisations, services: guides/identities.md
       - Run a node: guides/running-a-node.md
       - Publish and consume data: guides/consuming-data.md
