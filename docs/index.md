@@ -1,8 +1,8 @@
-# CIRCULess
+# CIRCULess DWMP - Digital waste management platform
 
-A way for organisations to share industrial data with each other **without giving up
-control of it**. The data stays where its owner put it; what moves is a description of
-it, a request, and a decision.
+CIRCULess addresses a gap in construction and demolition: reclaimed material — timber, minerals, hybrids — can only be reused if somebody can show what it is, and that evidence is scattered across the organisations that handled it.
+
+This documentation describes the core platform only — the infrastructure partners connect their contributions to. The services themselves, including the Digital Product Passport, are owned by the partners who build them and appear here only through the requirements they must meet to integrate.
 
 <div class="grid cards" markdown>
 
@@ -23,14 +23,14 @@ it, a request, and a decision.
 
 -   **Assessing it?**
 
-    [How your data is protected](understanding/security-measures.md), and
-    [what it deliberately does not do](understanding/what-it-does-not-do.md).
+    [How your data is protected](understanding/security-measures.md) — what is kept under
+    whose control, how it is verified, and what is not in place yet.
 
 </div>
 
 !!! info "TRL 5 — a beta"
-    This is a research platform at technology readiness level 5: demonstrated in a
+    This is a research platform aiming at technology readiness level 5: to be demonstrated in a
     relevant environment, not a product. Several controls are deliberately deferred and
-    the boundaries are stated rather than implied —
-    [what it does not do](understanding/what-it-does-not-do.md) is a real chapter, not a
-    disclaimer.
+    the boundaries are stated and planned for further releases after the evaluation of the
+    platform within CIRCULess — see
+    [what is not in place yet](understanding/security-measures.md#what-is-not-in-place-yet).

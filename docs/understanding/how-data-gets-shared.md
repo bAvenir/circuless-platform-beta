@@ -1,7 +1,14 @@
-# How data gets shared
+# How sharing works
 
-One dataset, from the moment it is published to the moment access is withdrawn. Two
-organisations: **Alpha**, who has the data, and **Beta**, who wants it.
+Two walkthroughs, from the moment something is published to the moment access is
+withdrawn. Two organisations throughout: **Alpha**, who owns the thing, and **Beta**, who
+wants to use it.
+
+The first follows a **dataset**, because it is the simpler shape and shows the agreement
+machinery plainly. The second follows a **service**, which is what most partners will
+actually offer.
+
+## Sharing a dataset
 
 ```mermaid
 sequenceDiagram
@@ -33,7 +40,7 @@ sequenceDiagram
     AN-->>B: refused
 ```
 
-## What happens at each step
+### What happens at each step
 
 **Publishing.** Alpha registers a dataset on their node and gives it a licence. At this
 point it is private: invisible to anyone outside Alpha, and absent from the catalogue.
@@ -62,22 +69,57 @@ Approval, refusal and revocation are all recorded with who did it and when.
 **Beta reads.** Alpha's node checks the agreement **at the moment of the request** —
 every request, not once at the start. It records who read what, when, and how much.
 
-**Alpha revokes.** Reads stop. The node learns within about thirty seconds, plus up to
-five minutes for a key already issued to expire — so call it well under ten minutes from
-the decision to the last possible read.
+**Alpha revokes.** Reads stop — the next request is refused. Beta's copy of anything
+already downloaded is still Beta's; revocation ends access, it does not reach into
+Beta's storage. This is the one place where a dataset is weaker than a service.
 
-## The three things worth taking away
+## Calling a service
 
-**The decision is always made by the provider's node.** Not by the Cloud, not by the
-network, not by the gateway, and not once at the start. Alpha's software decides each
-request about Alpha's data.
+Now the shape most partners will use. Alpha runs a grading model; Beta wants to grade a
+batch. Nothing about the model, and nothing about Alpha's credential for it, ever reaches
+Beta.
 
-**Withdrawal actually works.** Because nobody was given a copy, revoking is not a
-request that someone delete something. It is simply the end of access.
+```mermaid
+sequenceDiagram
+    autonumber
+    participant B as Beta<br/>(consumer)
+    participant AN as Alpha's node
+    participant SVC as Alpha's application<br/><i>never exposed</i>
 
-**Everything is recorded on both sides.** Alpha can see every read of their data,
-allowed and refused. Both organisations can see every change to the agreement. The
-records cannot be edited or deleted — that is what makes them worth having.
+    Note over AN,SVC: Alpha registered the application and<br/>gave its node the credential it needs
+    B->>AN: POST /invoke/grade — a batch to assess
+    AN->>AN: is the token valid, and for this node?
+    AN->>AN: does an agreement permit Beta to invoke this?
+    AN->>AN: record the decision, before anything is forwarded
+    AN->>AN: strip Beta's token, cookies and any CIRCULess header
+    AN->>SVC: the call, with Alpha's credential attached<br/>and Beta's identity named in a header
+    SVC-->>AN: the grading result
+    AN-->>B: the result, streamed back
+    Note over B: Beta has an answer.<br/>Not the model, not the credential,<br/>not Alpha's training data.
+    Note over AN: Alpha revokes
+    B->>AN: POST /invoke/grade
+    AN-->>B: refused — no agreement
+```
+
+### What is different from a dataset
+
+**The caller ends up with an answer.** That is the whole point. Beta learns what Alpha's
+model concluded about Beta's batch; Beta does not learn how it concluded it.
+
+**Alpha's credential never leaves Alpha's node.** The node holds it encrypted, attaches it
+on the way out, and returns it to nobody. Beta cannot call the application directly even
+if they discover its address — the application accepts traffic from the node only.
+
+**Beta cannot pretend to be someone else.** The node strips every `X-CIRCULess-*` header
+the caller sent before adding its own, so an identity in the forwarded request is one the
+node put there.
+
+**Withdrawal is complete.** Revoke the agreement and the next call is refused. Beta holds
+nothing that keeps working — which is the difference from a file, and the reason a service
+is usually the better thing to offer.
+
+**The application does not know any of this is happening.** It receives an ordinary HTTP
+request with its own credential on it. No CIRCULess-specific code, no library, no change.
 
 ## Variations on the same shape
 
@@ -87,14 +129,21 @@ accepts. Same agreement, started from the other end.
 **It can be an application rather than a person.** An application belonging to Beta can
 read under the same agreement, and is recorded as itself rather than as a person.
 
-**It can be a service instead of a dataset.** Instead of reading a file, Beta calls one
-of Alpha's applications through Alpha's node. The same agreement check happens first, and
-Alpha's credential is attached by the node — Beta never sees it and never reaches the
-application directly.
-
 **Someone can belong to two organisations.** A consultant working for both must say which
 one they are acting for when it could be either, and the record shows which.
 
+## The two things worth taking away
+
+**The decision is always made by the provider's node.** Not by the Cloud, not by the
+network, not by the gateway, and not once at the start. Alpha's software decides each
+request about Alpha's service or data, every time, against the agreements it holds — and
+it keeps deciding correctly even when the Cloud is unreachable.
+
+**Everything is recorded on both sides.** Alpha can see every call and every read,
+allowed and refused. Both organisations can see every change to the agreement. The
+records cannot be edited or deleted, which is what makes them worth having.
+
 ---
 
-Next: [who runs what](who-runs-what.md) — and who is responsible for it.
+Next: [how your data is protected](security-measures.md) — the controls behind all of
+this, and the limits of the beta.

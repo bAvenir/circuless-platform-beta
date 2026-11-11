@@ -18,12 +18,28 @@ publishes it. `README.md` has the build, the fetch step and the local commands.
 | Path | What | Status |
 |---|---|---|
 | `docs/index.md` | The landing page: four routes for four readers | Present |
-| `docs/understanding/` | Non-technical. What it is, the pieces, how data is shared, who runs what, what it does not do | **Five stubs to write** |
+| `docs/understanding/` | Non-technical. What CIRCULess is, the pieces, how sharing works. **Services-first** (J, 9 Nov 2026): the platform offers tools over APIs, and datasets are one of the two things a node can offer | Written |
 | `docs/understanding/glossary.md` | **Partner-facing** terms. Was `12_glossary.md` | v1.0 |
-| `docs/understanding/security-measures.md` | **Partner-facing**, technical audience. Was `security_measures.md` | v1.0, **and still says APISIX** — the edge has been Traefik since D32/D33 |
+| `docs/understanding/security-measures.md` | **Non-technical.** Rewritten for project officers and reviewers (J, 11 Nov 2026): what is kept under whose control, in plain words, with an honest list of what is not in place. No product names, no `SR-` numbers | v2.0 |
 | `docs/guides/`, `docs/integrating-a-service/` | Fetched from the code repositories at build time, and **gitignored**. Editing them here is discarded on the next fetch | Generated |
 | `docs/integrating-a-service/integration-requirements.md` | The contract a service must meet. Was planned as `service_integration_requirements.md` | **To write** |
 | `docs/integrating-a-service/api-surface.md` | Generated from the Cloud's `openapi.json` | Generated |
+
+### Not published — `unpublished/`
+
+| Path | What | Status |
+|---|---|---|
+| `unpublished/security-measures_developers.md` | The technical security measures, §1–§14, for partner technical staff, service owners and the T2.7 auditors. **The detail behind the published page**, shared directly with whoever needs it rather than on the site | v1.2, **withheld** (J, 11 Nov 2026) |
+| `unpublished/who-runs-what.md` | Shared responsibility: who operates what, and who is accountable for it | Written, **withheld** (J, 9 Nov 2026) |
+| `unpublished/what-it-does-not-do.md` | The beta's declared boundaries | Written, **withheld** (J, 9 Nov 2026) |
+
+Both are finished pages kept for possible later use. They are **outside `docs/` on
+purpose** — removing a page from `nav:` alone leaves MkDocs building and serving it at
+its URL, unlinked but public, which is the whole reason this repository separates
+published from unpublished by directory rather than by configuration. Moving either file
+back into `docs/` republishes it, and it would need adding to `nav:` and its inbound
+links restoring: `docs/index.md` and the end of `how-data-gets-shared.md` both used to
+point at them.
 
 ### Not published — repository root
 

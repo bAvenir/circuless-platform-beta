@@ -19,9 +19,6 @@ The central part of the core platform, operated by BVR: the *identity provider*,
 **CIRCULess Node** (node)
 A small application that holds an organisation's *datasets*, fronts its *services*, and makes the *access decision* for every request to them, locally. A node can run in the Cloud or on an organisation's own premises, and can host several *tenants*.
 
-**BVR-operated node**
-A node run by BVR on its own infrastructure. It stores only *non-sensitive* data and refuses data *classified* as *sensitive*.
-
 **Partner-operated node** (on-premises node)
 A node run by an organisation on its own premises. The organisation is responsible for the host it runs on — see *shared responsibility*.
 
@@ -40,11 +37,8 @@ The entry point for users whose computer is not on the *overlay network* — typ
 **Overlay network**
 A private, encrypted network connecting the nodes and the Cloud, based on WireGuard and managed with NetBird. A node joins it by connecting outwards, so no inbound firewall ports need to be opened at a partner's site.
 
-**Cloud admin UI**
+**Cloud admin UI - Console**
 The web interface for searching the catalogue, requesting access, approving requests and downloading data.
-
-**Node admin UI**
-The web interface for managing a node and the assets of its tenants.
 
 **Platform operator**
 A BVR staff member who administers the core platform during CIRCULess project. Platform operators should use *MFA*.
@@ -227,28 +221,6 @@ What a service must provide to be integrated: an HTTP API, an OpenAPI descriptio
 
 **OpenAPI description**
 A machine-readable description of an API. Required for every service, and published with its metadata record.
-
----
-
-## 6. Security and operations
-
-**Every hop encrypted**
-The platform's statement on encryption in transit: TLS with certificates from a public certificate authority on every publicly reachable endpoint, and WireGuard on the overlay network.
-
-**Shared responsibility**
-BVR is responsible for the platform software, the Cloud and BVR-operated nodes during CIRCULess project. An organisation running its own node is responsible for the host it runs on — operating system updates, disk protection, physical security and local firewall.
-
-**Degraded mode**
-When the Cloud is unreachable, nodes keep deciding access from their cached agreements. New tokens cannot be issued while the identity provider is down, so after at most five minutes new requests stop until it recovers.
-
-**Node kill switch**
-Cutting a node off the platform by disabling its node identity and removing it from the overlay network.
-
-**Security validation**
-The verification of the security requirements after the core platform is implemented, before the T2.7 audit.
-
-**TRL 5**
-Technology Readiness Level 5: technology validated in a relevant environment. The level the beta platform is validated at.
 
 ---
 

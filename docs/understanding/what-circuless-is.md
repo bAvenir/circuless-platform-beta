@@ -1,77 +1,63 @@
 # What CIRCULess is
 
-A way for organisations to share industrial data with each other **without giving up
-control of it**.
+A way for organisations to offer each other **tools over an API** — and the data those
+tools work on — **without giving up control of them**.
 
 ## The problem
 
 In a construction and demolition value chain, the information one organisation needs is
 usually already held by another. A recycler knows the composition of a batch. A
 contractor knows what went into a building. A manufacturer knows what their material can
-tolerate. Put together, that information makes reuse possible instead of theoretical.
+tolerate. And researchers and developers can create services and intelligent systems to extract value or recommend actions. 
+Putting all of it together can bring a greater reusability and benefits for all.
 
-It rarely gets put together. Sharing industrial data normally means sending a copy, and a
-copy is a decision you cannot take back:
 
-- you no longer know who has it, or how old their version is;
-- you cannot withdraw it when a project ends or a relationship changes;
-- commercially sensitive detail sits on somebody else's disk indefinitely;
-- so the safe answer is no, and the data stays where it is.
+## Offering a tool, not sending a file
 
-The obstacle is not the file format or the network. It is that *sharing* and *losing
-control* have been the same action.
+Most of what is worth sharing in this value chain is not a file. It is something that
+*does* work: a model that predicts how a reclaimed board will behave, a routine that
+grades surface defects, an optimiser that picks a destination for a batch. That capability
+lives in an application its owner already runs, and it is not something you can email.
 
-## What CIRCULess does instead
+CIRCULess makes it callable. The owner registers the application with their node, and the
+node puts an API in front of it. Another organisation calls that API and gets an answer
+back. What they never get is the application, the model behind it, or the credential that
+opens it — those stay where they were.
 
-It separates them. Three things move independently:
+The same mechanism carries datasets, which are the other thing a node can offer. The
+difference is what the caller ends up holding.
 
-**A description moves.** You publish what a dataset or service *is* — what it covers, its
-licence, where in the value chain it belongs. The description goes into a catalogue
-everyone signed in can search. The data itself does not go anywhere.
+## Granting and withdrawing
 
-**A request moves.** Someone finds your description and asks for access, naming what they
-want and why.
+Access is an **agreement** between two organisations: what may be used, by whom, for what,
+and between which dates. The owner grants it, and the owner ends it. Every call is checked
+against it at the moment it is made — not once at the start — by the owner's own node.
+Revoking takes effect within about thirty seconds.
 
-**A decision moves.** You approve or refuse. If you approve, the agreement says what they
-may do, with which resource, and for how long.
-
-Only then is any data read — and it is read **from your system, on your terms, one
-request at a time**. Every single request is checked against the agreement at the moment
-it is made, by the software holding the data. Not by a central server, and not once at
-the start.
-
-The consequence is the point: **withdrawing access is as easy as granting it.** Revoke
-the agreement and reads stop, within about half a minute. Nobody has a copy to forget
-about, because nobody was given one.
+**What withdrawal does and does not do.** For a tool, it is complete: the next call is
+refused, and the caller never had anything but answers. For a dataset, it stops any
+further read — but a file that has already been delivered has been delivered, and no
+agreement can reach into someone else's storage and take it back. That is a property of
+files, not a limitation of this platform, and it is worth knowing before you choose which
+of the two to offer.
 
 ## What it is not
 
 | | |
 |---|---|
-| **Not a data lake** | Nothing is centralised. The catalogue holds descriptions; the data stays with whoever owns it |
-| **Not a broker** | No intermediary holds your data in order to pass it on |
-| **Not a file-sharing service** | Access is an agreement that can be revoked, not a link that works until someone remembers to delete it |
-| **Not a replacement for your systems** | A node sits in front of what you already have, including existing applications |
+| **Not a marketplace of copies** | What you publish is an endpoint, not a bundle somebody downloads wholesale. The catalogue holds descriptions, never the thing itself |
+| **Not a data lake** | Nothing is centralised. Tools and data stay with whoever owns them |
+| **Not a broker** | No intermediary holds your data, or runs your application, in order to pass it on |
+| **Not a replacement for your systems** | A node sits in front of what you already run. Your application does not change, and needs no CIRCULess-specific code |
 
-## Where the data actually lives
+## Where the tools and data actually live
 
-On a **node** — a small piece of software that holds one or more organisations' data and
-answers requests for it. A node runs either on your own premises, where you control the
-machine, or on infrastructure Bavenir operates for organisations that do not want to run
-one.
+On a **node** — a small piece of software that fronts one or more organisations'
+applications and datasets, and answers every request for them. The node is the only thing
+a caller ever reaches; your application sits behind it and is never exposed.
 
-That choice is yours and it has consequences worth understanding before you make it. See
-[who runs what](who-runs-what.md).
-
-## This is a beta
-
-CIRCULess is at **technology readiness level 5**: demonstrated in a relevant environment,
-not a product. It works end to end and real organisations can use it, but some controls a
-production system would have are deliberately not built yet, and the boundaries are
-stated rather than implied.
-
-[What it does not do](what-it-does-not-do.md) is a real chapter, not a disclaimer. Read it
-before deciding what to put on the platform.
+A node runs either on your own premises, where you control the machine, or on
+infrastructure operated by an IT company, for organisations that would rather not run one.
 
 ---
 

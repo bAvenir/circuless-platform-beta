@@ -81,9 +81,7 @@ nav:
       - understanding/index.md
       - What CIRCULess is: understanding/what-circuless-is.md
       - The pieces: understanding/the-pieces.md
-      - How data gets shared: understanding/how-data-gets-shared.md
-      - Who runs what: understanding/who-runs-what.md
-      - What it does not do: understanding/what-it-does-not-do.md
+      - How sharing works: understanding/how-data-gets-shared.md
       - How your data is protected: understanding/security-measures.md
       - Glossary: understanding/glossary.md
   - Guides:
