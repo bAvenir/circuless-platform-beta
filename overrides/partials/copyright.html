@@ -4,6 +4,10 @@
    the site is served under a path, which GitHub Pages does. #}
 <div class="md-copyright">
   <div class="md-copyright__highlight">CIRCULess — the core platform documentation</div>
+  {# A privacy notice belongs on every page, not only in the navigation. Same
+     `base_url` reason as the emblem below: an absolute path breaks under GitHub
+     Pages' sub-path. The console's footer carries the same link. #}
+  <a href="{{ base_url }}/privacy-notice/">Privacy notice</a>
   <img class="md-footer-emblem"
        src="{{ base_url }}/assets/funded-by-the-eu.png"
        alt="Funded by the European Union" width="160">

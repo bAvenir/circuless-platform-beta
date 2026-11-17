@@ -73,6 +73,16 @@ The same measures, without the technical detail:
 | **The platform operator** | The software, the shared infrastructure, and any node run on your behalf |
 | **Your organisation** | If you run your own node, the machine it sits on: operating-system updates, disk protection, physical security, local firewall. And in every case, what you choose to publish, to whom, and how you classify it |
 
+**And for data about you personally** — your name, your work email address, which
+organisation you belong to, and the record of what you did on the platform — the
+[privacy notice](../privacy-notice.md) says what is held, why, for how long, who else
+can see it, and how to have it corrected or removed.
+
+That notice covers **accounts**. Anything inside a dataset or served by a tool stays the
+responsibility of the organisation that published it, as the table above says. Personal
+data is not permitted on shared infrastructure at all: it counts as sensitive, and a node
+the platform operator runs refuses it.
+
 ## What is not in place yet
 
 This is a beta — **validated in a relevant environment, not a finished product**. Some
@@ -85,7 +95,6 @@ prints on every run, so none of them can quietly disappear.
 |---|---|
 | A second factor at sign-in for platform operators | It starts to matter with the first person holding that role |
 | Named contacts for an incident | The procedure is written; for CIRCULess project the technical partners are clear within the consortium |
-| Privacy notice and data-protection screening | A closed consortium, with no personal data beyond user accounts |
 
 **Accepted for this stage, with a path to the final version**
 

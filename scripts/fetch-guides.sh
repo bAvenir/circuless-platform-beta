@@ -106,6 +106,26 @@ place circuless-node/examples/acting-for-a-user/README.md integrating-a-service/
 place circuless-node/examples/browser-app/README.md   guides/browser-applications.md
 place circuless-node/examples/reference-service/README.md integrating-a-service/reference-service.md
 
+# The privacy notice. Not a guide, and fetched for a different reason than the guides
+# are: it is a legal document about a deployment, so it lives with that deployment's
+# configuration and is published from there rather than maintained twice.
+#
+# **It must not be published with its fields unfilled.** The notice carries placeholders
+# for the controller, the data-protection contact and the supervisory authority until
+# somebody answers them — `deploy/security/privacy-notice-decisions.md` in the cloud
+# repository holds the list. A notice naming `<the operating organisation>` as its
+# controller is worse than an absent one: it is a published statement that identifies
+# nobody and gives a data subject no one to write to. Failing the build is the point.
+# There is no half-published state worth having, and the page that links to this one is
+# corrected in the same breath, so either both land or neither does.
+notice=circuless-cloud/deploy/security/privacy-notice.md
+if [ -f "$work/$notice" ] && grep -qE '<[^>]+>' "$work/$notice"; then
+  echo "::error::$notice still has unfilled fields and must not be published:" >&2
+  grep -nE '<[^>]+>' "$work/$notice" | sed 's/^/    /' >&2
+  exit 1
+fi
+place "$notice"                                       privacy-notice.md
+
 # Links between these documents are relative to where they live, not to where they
 # land. Rewriting them here keeps the sources untouched — editing them in their own
 # repositories to suit this site would make them wrong for anyone reading on GitHub.

@@ -100,6 +100,9 @@ nav:
       - Acting for a user: integrating-a-service/acting-for-a-user.md
       - The reference service: integrating-a-service/reference-service.md
       - API surface: integrating-a-service/api-surface.md
+  # Top level rather than inside a section: it is a legal document about the platform,
+  # not part of learning it, and the footer links to it from every page.
+  - Privacy notice: privacy-notice.md
 
 extra:
   social:
