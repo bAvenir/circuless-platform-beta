@@ -102,7 +102,7 @@ CIRCULess does not require any particular arrangement. All of these work:
 | **C10** | The service **should** be safe to call again. The node never retries, and forwards `Idempotency-Key` if the caller sends one | should |
 | **C19** | The service **must** serve its OpenAPI document at **`openapi.json`, relative to the endpoint registered for it**. A service registered at `https://svc.internal/api/v1` serves it at `https://svc.internal/api/v1/openapi.json` | must |
 | **C20** | `GET` **must** remain among the methods the resource permits. It is permitted by default; a registration narrowing them to, say, `POST` alone leaves the contract unreachable and the published address answering an error | must |
-| **C21** | A service that already publishes its document somewhere consumers can reach **may** register that address instead, as `openapi_ref`. It **must** then be an absolute URL | may |
+| **C21** | A service that already publishes its document somewhere consumers can reach **may** register that address instead, as `openapi_ref`. It **must** then be an absolute URL, and it **must not** be an address on a CIRCULess node | may |
 
 !!! info "Why `openapi.json` is relative to the endpoint, and not a fixed path"
     The node publishes the contract's address in the catalogue, so that a consumer
@@ -115,7 +115,31 @@ CIRCULess does not require any particular arrangement. All of these work:
     that one. Relative to what was registered, both shapes work.
 
     A provider who would rather publish the document themselves uses **C21**, and the
-    node leaves their address alone.
+    node leaves their address alone — which is why that address must not be a node's
+    own.
+
+!!! warning "`openapi_ref` names a document the node is not needed to reach"
+    It is for a contract a consumer can already fetch for themselves: a documentation
+    site, a public repository. It is not a way to write a node's address out by hand,
+    and one under `https://<node id>.nodes.circuless.bavenir.eu` is wrong even when it
+    is right today.
+
+    **At best it is redundant.** The node composes that URL from the endpoint you
+    registered, and keeps it correct when the node's public address changes. A copy
+    typed into `openapi_ref` is pinned to the address of the day, and the record's
+    `dcat:endpointURL` moves without it.
+
+    **At worst it withholds the reader's token.** A tool reading the contract sends a
+    node-audienced token only when the published address sits under the
+    `dcat:endpointURL` of the same record — otherwise it would be handing a node
+    credential to whatever host a provider named. An address that does not match
+    character for character is fetched without one, and the node answers
+    `401 invalid_token`: a refusal that reads like a permission problem and is not.
+
+    If a node's records carry an overlay address rather than a public one, the fix is
+    the operator's `CIRCULESS_NODE_GATEWAY_BASE_URL` — see
+    [Running a node](../guides/running-a-node.md). Setting `openapi_ref` works around
+    that in one record and breaks the token in the same move.
 
 ## 2.2 Tier 1 — services that read the caller's identity
 
