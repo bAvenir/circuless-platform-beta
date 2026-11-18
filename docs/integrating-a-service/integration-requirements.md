@@ -45,7 +45,7 @@ material and makes access decisions about other organisations' data.
 | | | |
 |---|---|---|
 | **P10** | The service **must** expose an HTTP API that the node can reach at a stable address | must |
-| **P11** | The service **must** have an OpenAPI 3 document that matches what actually runs | must |
+| **P11** | The service **must** have an OpenAPI 3 document that matches what actually runs. Where it has to be served is **C19** | must |
 | **P12** | The service **should** have a health endpoint and one consistent error format | should |
 | **P13** | The service image **should** be signed (Cosign), scanned (Trivy or Grype), and published with an SBOM (Syft) | should |
 | **P14** | Every address the service calls outside its host **should** be declared | should |
@@ -100,6 +100,22 @@ CIRCULess does not require any particular arrangement. All of these work:
 | **C8** | A `Location` header **must** be a relative path that resolves inside the registered endpoint | must |
 | **C9** | The service **must not** log its credential | must |
 | **C10** | The service **should** be safe to call again. The node never retries, and forwards `Idempotency-Key` if the caller sends one | should |
+| **C19** | The service **must** serve its OpenAPI document at **`openapi.json`, relative to the endpoint registered for it**. A service registered at `https://svc.internal/api/v1` serves it at `https://svc.internal/api/v1/openapi.json` | must |
+| **C20** | `GET` **must** remain among the methods the resource permits. It is permitted by default; a registration narrowing them to, say, `POST` alone leaves the contract unreachable and the published address answering an error | must |
+| **C21** | A service that already publishes its document somewhere consumers can reach **may** register that address instead, as `openapi_ref`. It **must** then be an absolute URL | may |
+
+!!! info "Why `openapi.json` is relative to the endpoint, and not a fixed path"
+    The node publishes the contract's address in the catalogue, so that a consumer
+    deciding whether to ask for access can read what the service offers. It composes
+    that address rather than asking for it, which only works if it knows where to look.
+
+    **Relative to the registration, because the registration is what varies.** A service
+    registered at `https://svc.internal/api/v1` already carries its version in the
+    endpoint; a fixed `/api/v1/openapi.json` would resolve to `/api/v1/api/v1/...` for
+    that one. Relative to what was registered, both shapes work.
+
+    A provider who would rather publish the document themselves uses **C21**, and the
+    node leaves their address alone.
 
 ## 2.2 Tier 1 — services that read the caller's identity
 
@@ -161,6 +177,7 @@ For completeness, because several requirements above are shaped by it:
 | **Adds** | The upstream credential, and `X-CIRCULess-Subject`, `-Org`, `-Resource`, `-Request-Id`, `-Actor` |
 | **Decides** | The agreement check, on every request, before the service is called at all |
 | **Records** | Who called, for which organisation, which resource, the decision and the bytes |
+| **Publishes** | The contract's address, in the catalogue entry, as `dcat:endpointDescription` — composed from the registered endpoint unless **C21** gave it one. Reading it is an ordinary call through the node, so it is decided and logged like any other |
 
 A caller cannot fake an identity header: inbound ones are removed before the service sees
 them. That protection applies to requests **through the node**.

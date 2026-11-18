@@ -22,7 +22,7 @@ publishes it. `README.md` has the build, the fetch step and the local commands.
 | `docs/understanding/glossary.md` | **Partner-facing** terms. Was `12_glossary.md` | v1.0 |
 | `docs/understanding/security-measures.md` | **Non-technical.** Rewritten for project officers and reviewers (J, 11 Nov 2026): what is kept under whose control, in plain words, with an honest list of what is not in place. No product names, no `SR-` numbers. Points at the privacy notice for personal data | v2.1 |
 | `docs/guides/`, `docs/integrating-a-service/` | Fetched from the code repositories at build time, and **gitignored**. Editing them here is discarded on the next fetch | Generated |
-| `docs/integrating-a-service/integration-requirements.md` | The contract a service must meet. Was planned as `service_integration_requirements.md` | **To write** |
+| `docs/integrating-a-service/integration-requirements.md` | The contract a service must meet. Was planned as `service_integration_requirements.md`. **Not fetched** — it is written here, unlike its neighbours | Written; prerequisites, the API contract in tiers, and ongoing obligations |
 | `docs/integrating-a-service/api-surface.md` | Generated from the Cloud's `openapi.json` | Generated |
 | `docs/privacy-notice.md` | The Articles 13/14 notice. **Fetched** from `circuless-cloud/deploy/security/privacy-notice.md` and gitignored, like the guides. Linked from the footer of every page. The fetch **refuses to publish it while it still carries unfilled fields** — the decisions behind it are in `privacy-notice-decisions.md` beside the source | Generated |
 
